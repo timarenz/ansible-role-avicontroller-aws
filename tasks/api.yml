@@ -9,3 +9,6 @@
   until: avicontroller_api_result.content.find("Authentication credentials were not provided.") != -1
   retries: 80
   delay: 15
+
+- debug:
+    msg: "Avi Controller is available at https://{{ avicontroller_public_ip }}"

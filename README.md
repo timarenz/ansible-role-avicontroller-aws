@@ -8,11 +8,9 @@ Ansible role to deploy a single Avi Networks Controller on AWS
 - python >= 2.6
 
 ## Installation
-To install this Ansible module, please issue the command on the machine you will run Ansible from.
+To install this Ansible module, please issue the command below in your Ansible roles directory.
 
-`ansible-galaxy`
-
-For more information please visit http://docs.ansible.com/ansible/galaxy.html
+`git clone https://github.com/timarenz/ansible-role-avicontroller-aws.git timarenz.avicontroller-aws`
 
 ## Role variables
 
@@ -36,7 +34,7 @@ VPC id of the AWS VPC the Avi Controller should be created in
 ## Dependencies
 None 
 
-## Example
+## Example Playbook
 
     ---
     - hosts: localhost
