@@ -1,0 +1,9 @@
+galaxy_info:
+  author: Tim Arenz
+  description: Ansible role to deploy a single Avi Networks Controller on AWS
+  company: your company (optional)
+  license: MIT
+
+  min_ansible_version: 2.2
+
+dependencies: []

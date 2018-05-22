@@ -1,0 +1,36 @@
+- name: "Create IAM role to enable AVI SE VM to be imported into AWS"
+  iam_role:
+    name: "{{ environment_name }}-vmimport"
+    assume_role_policy_document: "{{ lookup('file','vmimport-role-trust.json') }}"
+    state: "{{ environment_state }}"
+  register: avicontroller_vmimport_role
+
+- name: "Create IAM policy to enable AVI SE VM to be imported into AWS"
+  iam_policy:
+    iam_type: role
+    iam_name: "{{ avicontroller_vmimport_role.iam_role.role_name }}"
+    policy_name: "{{ environment_name }}-vmimport"
+    policy_document: "{{ role_path }}/files/vmimport-role-policy.json"
+    state: "{{ environment_state }}"
+
+- name: "Create IAM role to allow Avi Controller AMI to talk to different AWS services"
+  iam_role:
+    name: "{{ environment_name }}-AviController-Refined-Role"
+    assume_role_policy_document: "{{ lookup('file','avicontroller-role-trust.json') }}"
+    state: "{{ environment_state }}"
+  register: avicontroller_role_result
+
+- name: "Create and attach IAM policies for Avi Controller permissions"
+  iam_policy:
+    iam_type: role
+    iam_name: "{{ avicontroller_role_result.iam_role.role_name }}"
+    policy_name: "{{ environment_name }}-{{ item.name }}"
+    policy_document: "{{ item.file }}"
+    state: "{{ environment_state }}"
+  with_items:
+    - { name: 'AviController-EC2-Policy', file: '{{ role_path }}/files/avicontroller-role-policy.json' }
+    - { name: 'AviController-R53-Policy', file: '{{ role_path }}/files/avicontroller-role-r53-policy.json' }
+    - { name: 'AviController-AutoScalingGroup-Policy', file: '{{ role_path }}/files/avicontroller-role-auto-scaling-group-policy.json' }
+    - { name: 'AviController-SNS-Policy', file: '{{ role_path }}/files/avicontroller-sns-policy.json' }
+    - { name: 'AviController-SQS-Policy', file: '{{ role_path }}/files/avicontroller-sqs-policy.json' }
+    - { name: 'AviController-ASG-Notification', file: '{{ role_path }}/files/avicontroller-asg-notification-policy.json' }

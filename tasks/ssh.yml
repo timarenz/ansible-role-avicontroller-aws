@@ -1,0 +1,7 @@
+---
+- name: "Add SSH key pair to AWS"
+  ec2_key:
+    name: "{{environment_name}}-key"
+    key_material: "{{ avicontroller_public_key }}"
+    state: "{{ environment_state }}"
+  register: avicontroller_key_result

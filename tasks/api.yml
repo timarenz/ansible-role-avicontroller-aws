@@ -1,0 +1,11 @@
+- name: "Wait until Avi Controller is available"
+  uri:
+    url: "https://{{ avicontroller_public_ip }}/api/cluster/"
+    validate_certs: False
+    return_content: True  
+    method: GET
+    status_code: 401
+  register: avicontroller_api_result
+  until: avicontroller_api_result.content.find("Authentication credentials were not provided.") != -1
+  retries: 80
+  delay: 15

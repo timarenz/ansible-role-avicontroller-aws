@@ -1,0 +1,29 @@
+---
+- name: "Create security group for Avi Controller communication"
+  ec2_group:
+    name: "{{ environment_name }}-Avi-Controller"
+    description: "Allow necessary ports for Avi Controller communication"
+    vpc_id: "{{ avicontroller_vpc_id }}"
+    rules:
+      - proto: tcp
+        from_port: 22
+        to_port: 22
+        cidr_ip: 0.0.0.0/0
+      - proto: tcp
+        from_port: 80
+        to_port: 80
+        cidr_ip: 0.0.0.0/0
+      - proto: tcp
+        from_port: 443
+        to_port: 443
+        cidr_ip: 0.0.0.0/0
+      - proto: tcp
+        from_port: 8443
+        to_port: 8443
+        cidr_ip: 0.0.0.0/0
+      - proto: udp
+        from_port: 123
+        to_port: 123
+        cidr_ip: 0.0.0.0/0
+    state: "{{ environment_state }}"
+  register: avicontroller_security_group_result

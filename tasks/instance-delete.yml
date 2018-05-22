@@ -1,0 +1,19 @@
+- name: "Get all Avi Controller instances for the environment"
+  ec2_instance_facts:
+    filters:
+      vpc-id: "{{ avicontroller_vpc_id }}"
+      "tag:Name": "{{ environment_name }}-avicontroller"
+  register: avicontroller_instance_result
+
+- name: "Terminate Avi Controller instances of this particular VPC"
+  ec2:
+    instance_id: "{{ item.instance_id }}"
+    state: "{{ environment_state }}"
+    wait: true
+  with_items: 
+    - "{{ avicontroller_instance_result.instances }}"
+
+- name: "Delete SSH public key"
+  ec2_key:
+    name: "{{environment_name}}-key"
+    state: "{{ environment_state }}"

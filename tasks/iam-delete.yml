@@ -1,0 +1,36 @@
+- name: "Delete vmimport IAM policy"
+  iam_policy:
+    iam_type: role
+    iam_name: "{{ environment_name }}-vmimport"
+    policy_name: "{{ environment_name }}-vmimport"
+    policy_document: "{{ role_path }}/files/vmimport-role-policy.json"
+    state: "{{ environment_state }}"
+
+- name: "Delete vmimport IAM role "
+  iam_role:
+    name: "{{ environment_name }}-vmimport"
+    assume_role_policy_document: "{{ lookup('file','vmimport-role-trust.json') }}"
+    state: "{{ environment_state }}"
+  register: avicontroller_vmimport_role
+
+- name: "Delete Avi Controller IAM policies"
+  iam_policy:
+    iam_type: role
+    iam_name: "{{ environment_name }}-AviController-Refined-Role"
+    policy_name: "{{ environment_name }}-{{ item.name }}"
+    policy_document: "{{ item.file }}"
+    state: "{{ environment_state }}"
+  with_items:
+    - { name: 'AviController-EC2-Policy', file: '{{ role_path }}/files/avicontroller-role-policy.json' }
+    - { name: 'AviController-R53-Policy', file: '{{ role_path }}/files/avicontroller-role-r53-policy.json' }
+    - { name: 'AviController-AutoScalingGroup-Policy', file: '{{ role_path }}/files/avicontroller-role-auto-scaling-group-policy.json' }
+    - { name: 'AviController-SNS-Policy', file: '{{ role_path }}/files/avicontroller-sns-policy.json' }
+    - { name: 'AviController-SQS-Policy', file: '{{ role_path }}/files/avicontroller-sqs-policy.json' }
+    - { name: 'AviController-ASG-Notification', file: '{{ role_path }}/files/avicontroller-asg-notification-policy.json' }
+
+- name: "Delete Avi Controller IAM role"
+  iam_role:
+    name: "{{ environment_name }}-AviController-Refined-Role"
+    assume_role_policy_document: "{{ lookup('file','avicontroller-role-trust.json') }}"
+    state: "{{ environment_state }}"
+  register: avicontroller_role_result

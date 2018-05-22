@@ -1,0 +1,15 @@
+---
+# defaults file for timarenz.avicontroller-aws
+# Required variables that need to be set when this role is included
+required_vars:
+  # Name of the environment you want to provision, will be used as identifier (name tag) in AWS
+  - environment_name
+  - avicontroller_password
+  - avicontroller_vpc_id
+  - avicontroller_subnet_id
+  - avicontroller_public_key
+
+# Default state of the environment
+environment_state: "present"
+# avicontroller_ami_id: "ami-123456"
+avicontroller_instance_type: "m4.2xlarge"

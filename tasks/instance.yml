@@ -1,0 +1,65 @@
+- name: "Check for existing Avi Controller instance"
+  ec2_instance_facts:
+    filters:
+      vpc-id: "{{ avicontroller_vpc_id }}"
+      "tag:Name": "{{ environment_name }}-avicontroller"
+      instance-state-name: "running"
+  register: avicontroller_instance_result
+
+- name: "Register Avi Controller public IP as fact"
+  set_fact:
+    avicontroller_public_ip: "{{ avicontroller_instance_result.instances.0.public_ip_address }}"
+  when: avicontroller_instance_result.instances.0 is defined
+
+- name: "Add SSH public key to AWS"
+  ec2_key:
+    name: "{{environment_name}}-key"
+    key_material: "{{ avicontroller_public_key }}"
+    state: "{{ environment_state }}"
+  register: avicontroller_key_result
+
+- block:
+  - name: "Get Avi Controller AMIs"
+    ec2_ami_facts:
+      owners: 679593333241
+      filters:
+        name: "Avi-Controller-*"
+    register: avicontroller_instance_ami_results
+
+  - name: "Select latest Avi Controller AMI"
+    set_fact:
+      avicontroller_instance_latest_ami: "{{ avicontroller_instance_ami_results.images | sort(attribute='creation_date') | last }}"
+      
+  - name: "Select Avi Controller AMI id"
+    set_fact:
+      avicontroller_ami_id: "{{ avicontroller_instance_latest_ami.image_id }}"
+
+  when: avicontroller_ami_id is undefined
+
+- block:
+  - name: "Create Avi Controller instance"
+    ec2:
+      key_name: "{{ avicontroller_key_result.key.name }}"
+      instance_type: "{{ avicontroller_instance_type }}"
+      image: "{{ avicontroller_ami_id }}"
+      instance_profile_name: "{{ avicontroller_role_result.iam_role.role_name }}"
+      group: "{{ avicontroller_security_group_result.group_name }}"
+      wait: yes
+      vpc_subnet_id: "{{ avicontroller_subnet_id }}"
+      assign_public_ip: yes
+      user_data: "{{ lookup('template', 'setup-nocloud.json.j2') | to_json | string }}"
+      volumes:
+        - device_name: /dev/xvda
+          volume_type: gp2
+          volume_size: 64
+      count_tag:
+        Name: avicontroller
+      instance_tags:
+        Name: "{{ environment_name }}-avicontroller"
+      exact_count: 1
+    register: avicontroller_result
+
+  - name: "Register Avi Controller public IP as fact"
+    set_fact:
+      avicontroller_public_ip: "{{ avicontroller_result.instances.0.public_ip }}"
+  when: avicontroller_instance_result.instances.0 is undefined

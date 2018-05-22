@@ -1,0 +1,27 @@
+---
+# tasks file for timarenz.avicontroller-aws
+- name: "Check required variables"
+  fail:
+    msg: "Variable '{{ item }}' is not defined"
+  when: item not in vars
+  with_items: "{{ required_vars }}"
+
+- block:
+    - name: "Create IAM roles and policies"
+      include_tasks: "iam.yml"
+    - name: "Create security group"
+      include_tasks: "security-group.yml"
+    - name: "Create Avi Controller instance"
+      include_tasks: "instance.yml"
+    - name: "Wait until Avi Controller is initialized"
+      include_tasks: "api.yml"
+  when: environment_state == "present"
+
+- block:
+    - name: "Delete instance"
+      include_tasks: "instance-delete.yml"
+    - name: "Delete security group"
+      include_tasks: "security-group.yml"
+    - name: "Delete IAM roles and policies"
+      include_tasks: "iam-delete.yml"
+  when: environment_state == "absent"
